@@ -10,4 +10,4 @@ Cheuk-Hang Tse - [TseChapman](https://github.com/TseChapman)
 
 ---
 
-Based on the game engine designed Kelvin Sung, Jebediah Pavleas, Fernando Arnez, and Jason Pace. You can find their repo [here](https://docs.google.com/document/d/1hgwr9oMoO8gms5rGKVpDaVqXh0juc2He5-mWcRUpsRU/edit?usp=sharing)
+Based on the game engine designed Kelvin Sung, Jebediah Pavleas, Fernando Arnez, and Jason Pace. You can find their repo [here](https://github.com/Apress/build-your-own-2d-game-engine)
