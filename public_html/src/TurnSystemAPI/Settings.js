@@ -7,6 +7,7 @@ class Settings {
 
     this.turnType = builder.turnType;
     this.maxUsers = builder.maxUsers;
+    this.callbackFunction = builder.callbackFunction;
   }
 
   getTurnType() {
@@ -16,12 +17,17 @@ class Settings {
   getMaxUsers() {
     return this.maxUsers;
   }
+
+  getCallbackFunction() {
+    return this.callbackFunction;
+  }
 }
 
 Settings.Builder = class {
   constructor() {
     this.turnType = 'timed';
     this.maxUsers = 2;
+    this.callbackFunction = null;
   }
 
   setTurnType(type) {
@@ -55,7 +61,20 @@ Settings.Builder = class {
     return this;
   }
 
+  setCallbackFunction(callback) {
+    this.callbackFunction = callback;
+  }
+
   build() {
+    if (
+      (this.turnType === 'conditional' || this.turnType === 'priority') &&
+      this.callbackFunction === null
+    ) {
+      console.error(
+        'NoCallbackError: Conditional/Priority turn type was specified. However, no callback function was set.'
+      );
+      return null;
+    }
     return new Settings(this);
   }
 };
