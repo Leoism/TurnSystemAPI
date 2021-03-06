@@ -77,10 +77,12 @@ class TurnSystem {
    * Maxes out the time ticker to one update before the max.
    */
   maxOutTimeTicker() {
-    console.log('hu');
     this.timeTicker = this.maxTime - 1;
   }
 
+  /**
+   * Returns the remaining amount of time left before the timer reaches 0
+   */
   get remainingTime() {
     return Math.ceil((this.maxTime - this.timeTicker) / 60);
   }
