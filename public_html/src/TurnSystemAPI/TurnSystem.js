@@ -23,7 +23,13 @@ class TurnSystem {
     ) {
       this.callbackFunction = this.settings.getCallback();
     }
+    if (this.settings.getTurnType() === 'timed') {
+      this.timeTicker = 0;
+      this.maxTime = this.settings.getTurnTime() * 60;
+    }
   }
+
+  update() {}
 
   /**
    * Default construct the initializes the TurnSystem class with default settings.
@@ -31,6 +37,7 @@ class TurnSystem {
   _defaultConstructor() {
     this.settings = new Settings();
     this.callbackFunction = null;
+    this.timeTicker = 0;
     return this;
   }
 
@@ -50,10 +57,32 @@ class TurnSystem {
     }
 
     if (turnType === 'timed') {
-      setTimeout(() => {
-        console.log(`Next turn is up.`);
-      }, this.settings.getTurnTime() * 1000);
+      this.timeTicker++;
+      /** assume 60 update calls per second */
+      if (this.timeTicker === this.maxTime) {
+        const action = {
+          user: this.getCurrentUser(),
+          action: this.getCurrentUser().action(),
+        };
+        this.getCurrentUser().isActive = false;
+        this.users.push(this.users.shift());
+        this.getCurrentUser().isActive = true;
+        this.timeTicker = 0;
+        return action;
+      }
     }
+  }
+
+  /**
+   * Maxes out the time ticker to one update before the max.
+   */
+  maxOutTimeTicker() {
+    console.log('hu');
+    this.timeTicker = this.maxTime - 1;
+  }
+
+  get remainingTime() {
+    return Math.ceil((this.maxTime - this.timeTicker) / 60);
   }
 
   /**
