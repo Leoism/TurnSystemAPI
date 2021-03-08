@@ -60,10 +60,7 @@ class TurnSystem {
       this.timeTicker++;
       /** assume 60 update calls per second */
       if (this.timeTicker === this.maxTime) {
-        const action = {
-          user: this.getCurrentUser(),
-          action: this.getCurrentUser().action(),
-        };
+        const action = this.getCurrentUser().action();
         this.getCurrentUser().isActive = false;
         this.users.push(this.users.shift());
         this.getCurrentUser().isActive = true;
