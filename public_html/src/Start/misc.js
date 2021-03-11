@@ -8,6 +8,6 @@ window.onload = () => {
       gamePick = !gamePick;
     }
   };
-  myGame = new MainTurnDemo();
+  myGame = new ConditionalDemo();
   gEngine.Core.initializeEngineCore('GLCanvas', myGame);
 };
