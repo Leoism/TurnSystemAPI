@@ -3,16 +3,21 @@
 /* find out more about jslint: http://www.jslint.com/help.html */
 
 const actions = {
-    NONE = 0,
-    TOP_LEFT = 1,
-    TOP = 2,
-    TOP_RIGHT = 3,
-    MID_LEFT = 4,
-    MID = 5,
-    MID_RIGHT = 6,
-    BOT_LEFT = 7,
-    BOT = 8,
-    BOT_RIGHT = 9
+    NONE : 0,
+    TOP_LEFT : 1,
+    TOP : 2,
+    TOP_RIGHT : 3,
+    MID_LEFT : 4,
+    MID : 5,
+    MID_RIGHT : 6,
+    BOT_LEFT : 7,
+    BOT : 8,
+    BOT_RIGHT : 9
+};
+
+const actionTypes = {
+    CROSS : 0,
+    CIRCLE : 1
 };
 
 class ConditionalDemo {
@@ -38,14 +43,19 @@ class ConditionalDemo {
         this.mNumBoxPerRow = 3;
         
         this.mMatrixRenderables = null; // Renderables for the boxes
+        this.mCurAction = null;
+        this.mCurActionRen = null;
         this.mActionsArr = null; // 3 * 3 actions
         this.mActionsRens = null;
         this.mParameters = null;
+        
+        this.mIsGameCompleted = false;
         
         this.mCamera = null;
         this.mTurnSystem = null;
         this.mCurrentPlayer = null;
         this.mInstruction = null;
+        this.mWinner = null;
     }
     
     // Begin Scene: must load all the scene contents
@@ -78,15 +88,25 @@ class ConditionalDemo {
         
         // Initialize the Instruction font renderable
         this._initInstructionRenderable();
+        
+        // Initialize the Winner font renderable
+        this._initWinnerRenderable();
     }
     
     // update function to be called form EngineCore.GameLoop
     update() {
+        if (this.mIsGameCompleted) {
+            return;
+        }
+        
         // Check user Input
         this._userInput();
         
         // update user status
         this._updateCurrentPlayer();
+        
+        // Check if there is a winner
+        this._checkWinner();
         
         this.mTurnSystem.calculateNextTurn();
     }
@@ -101,6 +121,12 @@ class ConditionalDemo {
         
         // Draw the matrix renderable
         this._drawMatrixRenderables(this.mCamera);
+        
+        // Draw current action renderable
+        this._drawCurActionRen(this.mCamera);
+        
+        // Draw the action renderables
+        this._drawActionRen(this.mCamera);
         
         // Draw the status font renderables
         this._drawFontRenderables(this.mCamera);
@@ -164,12 +190,13 @@ class ConditionalDemo {
                                                        renWidth);
                                                        
         this.mMatrixRenderables = {top, bottom, left, right, leftVertical, rightVertical, topHorizontal, bottomHorizontal};
-        this.mParameters = this.Parameters(center, boxWidth, renWidth);
+        this.mParameters = new Parameters(center, boxWidth, renWidth);
     }
     
     // Initialize the action's 3 * 3 double array
     _initActionArray() {
         this.mActionsArr = [];
+        this.mActionsRens = [];
         for (var i = 0; i < 3; i++) {
             this.mActionsArr.push([-1,-1,-1]);
         }
@@ -189,8 +216,8 @@ class ConditionalDemo {
     
     // Called from _initTurnSystem. Initialize the users in the game.
     _initUsers() {
-        var player1 = new Player(0, "Player 1: Cross", [0,0,0,1], this.kFont, this.kCrossSprite, 2, 15);
-        var player2 = new Player(1, "Player 2: Circle", [0,0,0,1], this.kFont, this.kCircleSprite, 2, 10);
+        var player1 = new Player(0, "Player 1: Cross", [0,0,0,1], this.kFont, this.kCrossSprite, actionTypes.CROSS, 2, 15);
+        var player2 = new Player(1, "Player 2: Circle", [0,0,0,1], this.kFont, this.kCircleSprite, actionTypes.CIRCLE, 2, 10);
         this.mTurnSystem.addUser(player1);
         this.mTurnSystem.addUser(player2);
     }
@@ -238,16 +265,24 @@ class ConditionalDemo {
         this._initText(this.mInstruction, 2, 147, [0, 0, 0, 1], 4);
     }
     
+    // Initialize the Winner font renderable
+    _initWinnerRenderable() {
+        this.mWinner = new FontRenderable('Winner is');
+        this.mWinner.setFont(this.kFont);
+        this._initText(this.mWinner, 2, 140, [0, 0, 0, 1], 4);
+    }
+    
     // Player makes a move
     _playerAction() {
-        const xPos = gEngine.Input.getMousePosX();
-        const yPos = gEngine.Input.getMousePosY();
+        const xPos = this.mCamera.mouseWCX();
+        const yPos = this.mCamera.mouseWCY();
         
         const maxX = this.mParameters.mMaxX;
         const minX = this.mParameters.mMinX;
         const maxY = this.mParameters.mMaxY;
         const minY = this.mParameters.mMinY;
         const boxWidth = this.mParameters.mBoxWidth;
+        //console.log(`xPos: ${xPos} , yPos: ${yPos} , maxX: ${maxX} , minX: ${minX} , maxY: ${maxY} , minY: ${minY}`);
         
         // Test which box the mouse position falls within
         var action = actions.NONE;
@@ -255,59 +290,123 @@ class ConditionalDemo {
         // Test TOP_LEFT
         if ((xPos >= minX && xPos < (minX + boxWidth)) &&
             (yPos <= maxY && yPos > (maxY - boxWidth))) {
-            
+            action = actions.TOP_LEFT;
         }
         // Test TOP
         if ((xPos >= (minX + boxWidth) && xPos < (minX + 2 * boxWidth)) &&
             (yPos <= maxY && yPos > (maxY - boxWidth))) {
-            
+            action = actions.TOP;
         }
         // Test TOP_RIGHT
         if ((xPos >= (minX + 2 * boxWidth) && xPos < maxX) &&
             (yPos <= maxY && yPos > (maxY - boxWidth))) {
-            
+            action = actions.TOP_RIGHT;
         }
         // Test MID_LEFT
         if ((xPos >= minX && xPos < (minX + boxWidth)) &&
-            (yPos <= this.mParameters.mMaxY && yPos > (this.mParameters.mMaxY - this.mParameters.mBoxWidth))) {
-            
+            (yPos <= (maxY - boxWidth) && yPos > (maxY - 2 * boxWidth))) {
+            action = actions.MID_LEFT;
         }
         // Test MID
         if ((xPos >= (minX + boxWidth) && xPos < (minX + 2 * boxWidth)) &&
-            (yPos <= this.mParameters.mMaxY && yPos > (this.mParameters.mMaxY - this.mParameters.mBoxWidth))) {
-            
+            (yPos <= (maxY - boxWidth) && yPos > (maxY - 2 * boxWidth))) {
+            action = actions.MID;
         }
         // Test MID_RIGHT
         if ((xPos >= (minX + 2 * boxWidth) && xPos < maxX) &&
-            (yPos <= this.mParameters.mMaxY && yPos > (this.mParameters.mMaxY - this.mParameters.mBoxWidth))) {
-            
+            (yPos <= (maxY - boxWidth) && yPos > (maxY - 2 * boxWidth))) {
+            action = actions.MID_RIGHT;
         }
         // Test BOT_LEFT
         if ((xPos >= minX && xPos < (minX + boxWidth)) &&
-            (yPos <= this.mParameters.mMaxY && yPos > (this.mParameters.mMaxY - this.mParameters.mBoxWidth))) {
-            
+            (yPos <= (minY + boxWidth) && yPos > minY)) {
+            action = actions.BOT_LEFT;
         }
         // Test BOT
         if ((xPos >= (minX + boxWidth) && xPos < (minX + 2 * boxWidth)) &&
-            (yPos <= this.mParameters.mMaxY && yPos > (this.mParameters.mMaxY - this.mParameters.mBoxWidth))) {
-            
+            (yPos <= (minY + boxWidth) && yPos > minY)) {
+            action = actions.BOT;
         }
         // Test BOT_RIGHT
         if ((xPos >= (minX + 2 * boxWidth) && xPos < maxX) &&
-            (yPos <= this.mParameters.mMaxY && yPos > (this.mParameters.mMaxY - this.mParameters.mBoxWidth))) {
-            
+            (yPos <= (minY + boxWidth) && yPos > minY)) {
+            action = actions.BOT_RIGHT;
         }
+        return action;
+    }
+    
+    _isValidAction(action) {
+        // Check if the action is already taken
+        var row = Math.floor((action - 1)/3);
+        var col = (action - 1)%3;
+        if (this.mActionsArr[row][col] === -1) {
+            return true;
+        }
+        return false;
+    }
+    
+    _setupActionRenderable() {
+        var sprite = this.mTurnSystem.getCurrentUser().getMarker();
+        var position = this.mParameters.mPositionDict[this.mCurAction];
+        var width = this.mParameters.mCurActionRenWidth;
+        
+        var ren = new SpriteRenderable(sprite);
+        ren.setColor([1, 1, 1, 0]);
+        ren.getXform().setPosition(position[0], position[1]);
+        ren.getXform().setSize(width, width);
+        ren.setElementPixelPositions(0, 512, 0, 512);
+        
+        this.mActionsRens.push(ren);
+    }
+    
+    _modifyActionArr() {
+        var row = Math.floor((this.mCurAction - 1)/3);
+        var col = (this.mCurAction - 1)%3;
+        this.mActionsArr[row][col] = this.mTurnSystem.getCurrentUser().getActionType();
+    }
+    
+    _setupCurActionRenderable() {
+        if (this.mCurActionRen === null) {
+            var boxWidth = this.mParameters.mCurActionRenWidth;
+            // Create the renderable
+            this.mCurActionRen = new Renderable();
+            this.mCurActionRen.setColor([1,0,0,1]);
+            this.mCurActionRen.getXform().setSize(boxWidth, boxWidth);
+        }
+        
+        var position = this.mParameters.mPositionDict[this.mCurAction];
+        // Translate the position based on action
+        this.mCurActionRen.getXform().setPosition(position[0],position[1]);
     }
     
     // Check user's input
     _userInput() {
         // End turn
         if (gEngine.Input.isKeyClicked(gEngine.Input.keys.E)) {
-            this.mTurnSystem.getCurrentUser().isMetCondition = true;
+            if (this.mTurnSystem.getCurrentUser().mIsMadeMove === true) {
+                this.mTurnSystem.getCurrentUser().isMetCondition = true;
+                
+                // setup the renderable at action position
+                this._setupActionRenderable();
+                
+                // modify the action array to store the board
+                this._modifyActionArr();
+                
+                // reset current action
+                this.mCurAction = null;
+                this.mCurActionRen = null;
+                this.mTurnSystem.getCurrentUser().mIsMadeMove = false;
+            }
         }
         
-        if (gEngine.Input.isButtonClicked(gEngine.Input.keys.Left)) {
-            this._playerAction();
+        if (gEngine.Input.isButtonClicked(gEngine.Input.mouseButton.Left)) {
+            var action = this._playerAction();
+            //console.log(`action = ${action}`);
+            if (action !== actions.NONE && this._isValidAction(action)) {
+                this.mCurAction = action;
+                this._setupCurActionRenderable();
+                this.mTurnSystem.getCurrentUser().mIsMadeMove = true;
+            }
         }
     }
     
@@ -315,6 +414,116 @@ class ConditionalDemo {
     _updateCurrentPlayer() {
         var curPlayer = this.mTurnSystem.getCurrentUser();
         this.mCurrentPlayer.setText("Current Player: Player " + (curPlayer.getIndex() + 1));
+    }
+    
+    _updateWinnerText() {
+        var winnerString = this.mTurnSystem.getCurrentUser().getName();
+        this.mWinner.setText("Winner is " + winnerString);
+    }
+    
+    // Check if there is a winner in the game
+    _checkWinner() {
+        var numBox = this.mNumBoxPerRow;
+        var isEmptyBox = false;
+        
+        // Check horizontal
+        for (var row = 0; row < numBox; row++) {
+            var rowSum = 0;
+            var isRowComplete = true;
+            for (var col = 0; col < numBox; col++) {
+                var action = this.mActionsArr[row][col];
+                if (action === -1) {
+                    isRowComplete = false;
+                    isEmptyBox = true;
+                    break;
+                }
+                rowSum += action;
+            }
+            if (!isRowComplete) {
+                continue;
+            }
+            
+            if (rowSum === 0) {
+                console.log('Cross Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+            else if (rowSum === 3) {
+                console.log('Circle Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+        }
+        
+        // Check Vertical
+        for (var col = 0; col < numBox; col++) {
+            var colSum = 0;
+            var isColComplete = true;
+            for (var row = 0; row < numBox; row++) {
+                var action = this.mActionsArr[row][col];
+                if (action === -1) {
+                    isColComplete = false;
+                    isEmptyBox = true;
+                    break;
+                }
+                colSum += action;
+            }
+            
+            if (!isColComplete) {
+                continue;
+            }
+            
+            if (colSum === 0) {
+                console.log('Cross Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+            else if (colSum === 3) {
+                console.log('Circle Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+        }
+        
+        if (this.mActionsArr[2][0] !== -1 && this.mActionsArr[1][1] !== -1 && this.mActionsArr[0][2] !== -1) {
+            var sum = this.mActionsArr[2][0] + this.mActionsArr[1][1] + this.mActionsArr[0][2];
+            if (sum === 0) {
+                console.log('Cross Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+            else if (sum === 3) {
+                console.log('Circle Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+        }
+        else {
+            isEmptyBox = true;
+        }
+        
+        if (this.mActionsArr[0][0] !== -1 && this.mActionsArr[1][1] !== -1 && this.mActionsArr[2][2] !== -1) {
+            var sum = this.mActionsArr[0][0] + this.mActionsArr[1][1] + this.mActionsArr[2][2];
+            if (sum === 0) {
+                console.log('Cross Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+            else if (sum === 3) {
+                console.log('Circle Win');
+                this._updateWinnerText();
+                this.mIsGameCompleted = true;
+            }
+        }
+        else {
+            isEmptyBox = true;
+        }
+        
+        if (!isEmptyBox && !this.mIsGameCompleted) {
+            console.log('Draw');
+            this.mWinner.setText("Draw");
+            this.mIsGameCompleted = true;
+        }
     }
     
     // Draw the matrix renderables
@@ -329,6 +538,25 @@ class ConditionalDemo {
         this.mMatrixRenderables.bottomHorizontal.draw(cam);
     }
     
+    // Draw Current action renderable, if any
+    _drawCurActionRen(cam) {
+        if (this.mCurActionRen === null) {
+            return;
+        }
+        this.mCurActionRen.draw(cam);
+    }
+    
+    // Draw the action sprite renderables, if any
+    _drawActionRen(cam) {
+        var size = this.mActionsRens.length;
+        if (size <= 0) {
+            return;
+        }
+        for (var i = 0; i < size; i++) {
+            this.mActionsRens[i].draw(cam);
+        }
+    }
+    
     // Draw all the Font renderables
     _drawFontRenderables(cam) {
         this.mCurrentPlayer.draw(cam);
@@ -338,10 +566,14 @@ class ConditionalDemo {
         for (var i = 0; i < numPlayers; i++) {
             this.mTurnSystem.getUserByIndex(i).draw(cam);
         }
+        
+        if (this.mIsGameCompleted) {
+            this.mWinner.draw(cam);
+        }
     }
 }
 
-ConditionalDemo.Parameters = class {
+class Parameters  {
     constructor(center, boxWidth, renWidth) {
         // Parameters:
         this.mCenter = center;
@@ -351,5 +583,17 @@ ConditionalDemo.Parameters = class {
         this.mMinX = center[0] - (boxWidth * 1.5);
         this.mMaxY = center[1] + (boxWidth * 1.5);
         this.mMinY = center[1] - (boxWidth * 1.5);
+        this.mCurActionRenWidth = boxWidth/2;
+        this.mPositionDict = {
+            [actions.TOP_LEFT] : vec2.fromValues(center[0] - boxWidth, center[1] + boxWidth),
+            [actions.TOP] : vec2.fromValues(center[0], center[1] + boxWidth),
+            [actions.TOP_RIGHT] : vec2.fromValues(center[0] + boxWidth, center[1] + boxWidth),
+            [actions.MID_LEFT] : vec2.fromValues(center[0]- boxWidth, center[1]),
+            [actions.MID] : center,
+            [actions.MID_RIGHT] : vec2.fromValues(center[0] + boxWidth, center[1]),
+            [actions.BOT_LEFT] : vec2.fromValues(center[0] - boxWidth, center[1] - boxWidth),
+            [actions.BOT] : vec2.fromValues(center[0], center[1] - boxWidth),
+            [actions.BOT_RIGHT] : vec2.fromValues(center[0] + boxWidth, center[1] - boxWidth)
+        };
     }
-};
+}

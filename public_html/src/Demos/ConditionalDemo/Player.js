@@ -5,13 +5,14 @@
  */
 
 class Player extends UserState {
-    constructor(index, name, color, font, marker, xPos, yPos) {
+    constructor(index, name, color, font, marker, actionType, xPos, yPos) {
         super();
         this.mIndex = index;
         this.mName = name;
         this.mColor = color;
         this.kFont = font;
         this.kMarker = marker;
+        this.mActionType = actionType;
         
         this.mIsMadeMove = false;
         
@@ -22,6 +23,10 @@ class Player extends UserState {
     getIndex() { return this.mIndex; }
     
     getName() { return this.mName; }
+    
+    getMarker() { return this.kMarker; }
+    
+    getActionType() { return this.mActionType; }
     
     draw(cam) {
         this.mRenderable.draw(cam);
