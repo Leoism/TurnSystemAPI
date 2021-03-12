@@ -21,7 +21,7 @@ class TurnSystem {
       this.settings.getTurnType() === 'priority' ||
       this.settings.getTurnType() === 'conditional'
     ) {
-      this.callbackFunction = this.settings.getCallback();
+      this.callbackFunction = this.settings.getCallbackFunction();
     }
     if (this.settings.getTurnType() === 'timed') {
       this.timeTicker = 0;
@@ -54,6 +54,10 @@ class TurnSystem {
     if (turnType === 'conditional') {
       const isMet = this.callbackFunction(this.getCurrentUser());
       console.log(`Is condition met: ${isMet}`);
+      if (isMet) {
+          this.getCurrentUser().isMetCondition = false; // reset the UserState's isMetCondition
+          this._shiftNextUser();
+      }
     }
 
     if (turnType === 'timed') {
@@ -61,9 +65,7 @@ class TurnSystem {
       /** assume 60 update calls per second */
       if (this.timeTicker === this.maxTime) {
         const action = this.getCurrentUser().action();
-        this.getCurrentUser().isActive = false;
-        this.users.push(this.users.shift());
-        this.getCurrentUser().isActive = true;
+        this._shiftNextUser();
         this.timeTicker = 0;
         return action;
       }
@@ -97,12 +99,30 @@ class TurnSystem {
   getNextUser() {
     return this.users[1];
   }
+  
+  /**
+   * @param {int} index
+   * Return the user at specific index.
+   */
+  getUserByIndex(index) {
+      if (index < this.getNumUsers()) {
+          return this.users[index];
+      }
+      return null;
+  }
 
   /**
    * Returns the list of all users.
    */
   getAllUsers() {
     return this.users;
+  }
+  
+  /**
+   * Return the number of users in the system
+   */
+  getNumUsers() {
+      return this.users.length;
   }
 
   /**
@@ -153,5 +173,15 @@ class TurnSystem {
       if (this.users[i] === user) return i;
     }
     return -1;
+  }
+  
+  /**
+   * Turn the current player state to not active,
+   * then shift the users queue and set the first/new current player to active
+   */
+  _shiftNextUser() {
+        this.getCurrentUser().isActive = false;
+        this.users.push(this.users.shift());
+        this.getCurrentUser().isActive = true;
   }
 }
