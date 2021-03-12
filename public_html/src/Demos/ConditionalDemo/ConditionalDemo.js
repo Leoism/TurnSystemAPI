@@ -226,10 +226,7 @@ class ConditionalDemo {
     _initTurnSystem() {
         // Define Conditional callbackfunction
         function conditionFun (user) {
-            if (user.isMetCondition === true) {
-                return true;
-            }
-            return false;
+            return user.isMetCondition;
         }
         
         // use the builder class for setting
@@ -413,12 +410,12 @@ class ConditionalDemo {
     // Update the text in the CurrentPlayer font renderable based on current player
     _updateCurrentPlayer() {
         var curPlayer = this.mTurnSystem.getCurrentUser();
-        this.mCurrentPlayer.setText("Current Player: Player " + (curPlayer.getIndex() + 1));
+        this.mCurrentPlayer.setText(`Current Player: Player ${curPlayer.getIndex() + 1}`);
     }
     
     _updateWinnerText() {
         var winnerString = this.mTurnSystem.getCurrentUser().getName();
-        this.mWinner.setText("Winner is " + winnerString);
+        this.mWinner.setText(`Winner is ${winnerString}`);
     }
     
     // Check if there is a winner in the game
