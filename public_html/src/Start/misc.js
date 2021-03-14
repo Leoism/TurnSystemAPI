@@ -8,12 +8,8 @@ window.onload = () => {
       gamePick = !gamePick;
     }
   };
-<<<<<<< HEAD
-  myGame = new ConditionalDemo();
-=======
   myGame = new PriorityDemo();
   document.getElementById('priority-controls').style.display = 'inline';
->>>>>>> 33403ea... Create a Priority Demo
   gEngine.Core.initializeEngineCore('GLCanvas', myGame);
 };
 
