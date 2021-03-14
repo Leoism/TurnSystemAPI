@@ -1,15 +1,43 @@
 let myGame;
 window.onload = () => {
-  let gamePick = false;
+  const options = [
+    MainTurnDemo,
+    AddRemovePlayerDemo,
+    PriorityDemo,
+    ConditionalDemo,
+  ];
+
   document.onkeydown = (event) => {
-    if (event.key?.toLowerCase() === '/') {
-      myGame = gamePick ? new MainTurnDemo() : new AddRemovePlayerDemo();
+    // Timed Turn Demo
+    if (event.key?.toLowerCase() === '5') {
+      myGame = new options[0]();
       gEngine.Core.initializeEngineCore('GLCanvas', myGame);
-      gamePick = !gamePick;
+      document.getElementById('priority-controls').style.display = 'none';
+    }
+
+    // AddRemove Players
+    if (event.key?.toLowerCase() === '6') {
+      myGame = new options[1]();
+      gEngine.Core.initializeEngineCore('GLCanvas', myGame);
+      document.getElementById('priority-controls').style.display = 'none';
+    }
+
+    // Priority Demo
+    if (event.key?.toLowerCase() === '7') {
+      myGame = new options[2]();
+      gEngine.Core.initializeEngineCore('GLCanvas', myGame);
+      document.getElementById('priority-controls').style.display = 'inline';
+    }
+
+    // Conditional Demo
+    if (event.key?.toLowerCase() === '8') {
+      myGame = new options[3]();
+      gEngine.Core.initializeEngineCore('GLCanvas', myGame);
+      document.getElementById('priority-controls').style.display = 'none';
     }
   };
-  myGame = new PriorityDemo();
-  document.getElementById('priority-controls').style.display = 'inline';
+
+  myGame = new MainTurnDemo();
   gEngine.Core.initializeEngineCore('GLCanvas', myGame);
 };
 
