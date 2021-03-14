@@ -47,16 +47,17 @@ class TurnSystem {
   calculateNextTurn() {
     const turnType = this.settings.getTurnType();
     if (turnType === 'priority') {
-      this.callbackFunction(users);
-      console.log(`New order of turns: ${users}`);
+      this.callbackFunction(this.getAllUsers());
+      console.log(`New order of turns:`);
+      console.log(this.getAllUsers());
     }
 
     if (turnType === 'conditional') {
       const isMet = this.callbackFunction(this.getCurrentUser());
       console.log(`Is condition met: ${isMet}`);
       if (isMet) {
-          this.getCurrentUser().isMetCondition = false; // reset the UserState's isMetCondition
-          this._shiftNextUser();
+        this.getCurrentUser().isMetCondition = false; // reset the UserState's isMetCondition
+        this._shiftNextUser();
       }
     }
 
@@ -99,16 +100,27 @@ class TurnSystem {
   getNextUser() {
     return this.users[1];
   }
-  
+
   /**
    * @param {int} index
    * Return the user at specific index.
    */
   getUserByIndex(index) {
-      if (index < this.getNumUsers()) {
-          return this.users[index];
-      }
-      return null;
+    if (index < this.getNumUsers()) {
+      return this.users[index];
+    }
+    return null;
+  }
+
+  /**
+   * @param {int} index
+   * Return the user at specific index.
+   */
+  getUserByIndex(index) {
+    if (index < this.getNumUsers()) {
+      return this.users[index];
+    }
+    return null;
   }
 
   /**
@@ -117,12 +129,19 @@ class TurnSystem {
   getAllUsers() {
     return this.users;
   }
-  
+
   /**
    * Return the number of users in the system
    */
   getNumUsers() {
-      return this.users.length;
+    return this.users.length;
+  }
+
+  /**
+   * Return the number of users in the system
+   */
+  getNumUsers() {
+    return this.users.length;
   }
 
   /**
@@ -170,18 +189,18 @@ class TurnSystem {
    */
   _findUserIndex(user) {
     for (let i = 0; i < this.users.length; i++) {
-      if (this.users[i] === user) return i;
+      if (this.users[i].equals(user)) return i;
     }
     return -1;
   }
-  
+
   /**
    * Turn the current player state to not active,
    * then shift the users queue and set the first/new current player to active
    */
   _shiftNextUser() {
-        this.getCurrentUser().isActive = false;
-        this.users.push(this.users.shift());
-        this.getCurrentUser().isActive = true;
+    this.getCurrentUser().isActive = false;
+    this.users.push(this.users.shift());
+    this.getCurrentUser().isActive = true;
   }
 }
