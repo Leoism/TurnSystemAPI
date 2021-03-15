@@ -2,12 +2,20 @@ window.onload = () => {
   let myGame;
   let gamePick = false;
   document.onkeydown = (event) => {
-    if (event.key.toLowerCase() === '/') {
-      myGame = gamePick ? new MainTurnDemo() : new AddRemovePlayerDemo();
+    if (event.key.toLowerCase() === '1') {
+      myGame = new MainTurnDemo();
       gEngine.Core.initializeEngineCore('GLCanvas', myGame);
       gamePick = !gamePick;
     }
+    else if (event.key.toLowerCase() === '2') {
+      myGame = new AddRemovePlayerDemo();
+      gEngine.Core.initializeEngineCore('GLCanvas', myGame);
+    }
+    else if (event.key.toLowerCase() === '3') {
+      myGame = new ConditionalDemo();
+      gEngine.Core.initializeEngineCore('GLCanvas', myGame);
+    }
   };
-  myGame = new ConditionalDemo();
+  myGame = new MainTurnDemo();
   gEngine.Core.initializeEngineCore('GLCanvas', myGame);
 };
