@@ -4,6 +4,7 @@
 class UserState {
   constructor() {
     this.isActive = false;
+    this.isMetCondition = false; // used in 'conditional' turn type
   }
 
   /**
