@@ -4,7 +4,7 @@ class MainTurnDemo extends Scene {
     this.turnSystem = null;
     this.settings = null;
     this.mainCamera = null;
-    this.player1Sprite = 'assets/demo1/player1.png';
+    this.player1Sprite = 'assets/demo1/player1.PNG';
     this.player2Sprite = 'assets/demo1/player2.png';
     this.player1Moves = [];
     this.player2Moves = [];
@@ -155,6 +155,7 @@ class MainTurnDemo extends Scene {
     this.timer.getXform().setPosition(50, 98);
     this.timer.setTextHeight(2);
   }
+
   _initAttackFont() {
     this.attackFont = new FontRenderable(' ');
     this.attackFont.setFont(this.font);
