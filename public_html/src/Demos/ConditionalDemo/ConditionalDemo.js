@@ -231,9 +231,9 @@ class ConditionalDemo {
         
         // use the builder class for setting
         var settingBuilder = new Settings.Builder();
-        settingBuilder.setTurnType(this.mTurnType); // 'conditional'
-        settingBuilder.setMaxUsers(this.mMaxPlayerNum); // only 2 players 
-        settingBuilder.setCallbackFunction(conditionFun);
+        settingBuilder.setTurnType(this.mTurnType); // 'timed'/'conditional'/'priority'
+        settingBuilder.setMaxUsers(this.mMaxPlayerNum); // max number of players allow in the game
+        settingBuilder.setCallbackFunction(conditionFun); // Conditional function
 
         // Transform the builder into setting into TurnSystem
         const setting = settingBuilder.build();

@@ -101,7 +101,7 @@ class TurnSystem {
   }
   
   /**
-   * @param {int} index
+   * @param {Number} index
    * Return the user at specific index.
    */
   getUserByIndex(index) {

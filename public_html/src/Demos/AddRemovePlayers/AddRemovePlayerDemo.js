@@ -151,7 +151,11 @@ AddRemovePlayerDemo.prototype._setupStatus = function () {
 AddRemovePlayerDemo.prototype._userInputs = function () {
     // If up key is clicked, add a player
     if (gEngine.Input.isKeyClicked(gEngine.Input.keys.A)) {
-        var user = new User(this.mCurPlayerIndex, "Tom" + this.mCurPlayerIndex, [0,0,0,1], this.kFont);
+        // self-define user object
+        var user = new User(this.mCurPlayerIndex,           
+                            "Tom" + this.mCurPlayerIndex, 
+                            [0,0,0,1], 
+                            this.kFont);
         this.mTurnSystem.addUser(user);
         this.mCurPlayerIndex++;
     }
@@ -160,7 +164,7 @@ AddRemovePlayerDemo.prototype._userInputs = function () {
     if (gEngine.Input.isKeyClicked(gEngine.Input.keys.D)) {
         var numPlayers = this.mTurnSystem.getAllUsers().length;
         if (numPlayers > 0) {
-            var lastPlayer = this.mTurnSystem.getAllUsers()[numPlayers - 1];
+            var lastPlayer = this.mTurnSystem.getUserByIndex(numPlayers - 1);
             this.mTurnSystem.removeUser(lastPlayer);
             this.mCurPlayerIndex--;
         }
